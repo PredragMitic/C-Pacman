@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <GL/glut.h>
 #include <math.h>
+#include <time.h>
 
 #define PI 3.14
 #define EPS 0.3
@@ -38,9 +39,9 @@ static int map_mat[67][67]  = {
                 {2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,0,8,0,1,1,1,1,1,1,1,1,1,1,1,0,8,0,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2},
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,8,0,1,0,0,0,0,1,0,0,0,0,1,0,8,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,5,0,0,2,0,4,0,5,0,2,0,8,0,1,0,0,0,0,1,0,0,0,0,1,0,8,0,2,0,4,0,5,0,2,0,4,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9},
-                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,8,0,2,0,7,9,9,9,9,9,9,9,9,9,9,9,9,0,6,0,2,0,8,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,8,0,2,0,7,9,9,9,0,6,0,1,0,7,9,9,9,0,6,0,2,0,8,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,8,0,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,0,8,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,8,0,2,0,4,9,9,9,9,9,9,9,9,9,9,9,9,0,5,0,2,0,8,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -79,7 +80,9 @@ static int position[2];
 static int next_position[2];
 static int wanted_direction[2];
 static int ghosts_color[3] = {1,2,3};
+static int ghosts_look[3] = {90,180,-90};
 static int ghosts_position[6];
+static int ghosts_dir[6] = {0,1,1,0,0,-1};
 static int game_timer;
 static int rot_ply = 0;
 static float anim_param;
@@ -95,6 +98,8 @@ void draw_wall_x();
 void draw_pillar( float from, float to);
 void light_and_material(void);
 void draw_ghost(int,int,int);
+void move_ghost(int ghost);
+float min_distance_to_another(int ghost, int x, int y);
 
 int main(int argc, char **argv)
 {
@@ -128,7 +133,7 @@ static void init_game(void)
     
     game_timer = 0;
     anim_param = 0;
-    on_going = 0;
+    on_going = 1;
 
     position[0] = 28;
     position[1] = 2;
@@ -151,38 +156,41 @@ static void init_game(void)
 
 static void on_keyboard(unsigned char key, int x, int y)
 {
-    switch (key) {
-    case 27:   
-        exit(0);
-        break;
-    case 'A':
-    case 'a':  
-        //left
-        wanted_direction[0] = 0;
-        wanted_direction[1] = -1;
-        break;
-    case 'W':
-    case 'w':   
-        wanted_direction[0] = -1;
-        wanted_direction[1] = 0;        
-        //up
-        break;
-    case 'D':
-    case 'd':   
-        wanted_direction[0] = 0;
-        wanted_direction[1] = 1;        
-        //right
-        break;
-    case 'S':
-    case 's':   
-        wanted_direction[0] = 1;
-        wanted_direction[1] = 0;        
-        //down
-        break;
-    case 13:
-        //start game
-        break;
+    if (on_going == 1){
+        switch (key) {
+        case 27:   
+            exit(0);
+            break;
+        case 'A':
+        case 'a':  
+            //left
+            wanted_direction[0] = 0;
+            wanted_direction[1] = -1;
+            break;
+        case 'W':
+        case 'w':   
+            wanted_direction[0] = -1;
+            wanted_direction[1] = 0;        
+            //up
+            break;
+        case 'D':
+        case 'd':   
+            wanted_direction[0] = 0;
+            wanted_direction[1] = 1;        
+            //right
+            break;
+        case 'S':
+        case 's':   
+            wanted_direction[0] = 1;
+            wanted_direction[1] = 0;        
+            //down
+            break;
+        case 13:
+            //start game
+            break;
+        }
     }
+    
     glutPostRedisplay();
 }
 
@@ -193,7 +201,7 @@ static void on_display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(40, 30, 7, 30, 30, 0, 0, 0, 1);
+    gluLookAt(60, 30, 42, 38, 30, 0, 0, 0, 1);
     
     glBegin(GL_LINES);
         // X Axis
@@ -226,32 +234,59 @@ static void on_display(void)
         glVertex3f(62,0,0);
     glEnd();
    
+    if (on_going == 1){
+        
+        if (map_mat[position[0] + wanted_direction[0]][position[1] + wanted_direction[1]] > 0){
+            next_position[0] = wanted_direction[0];
+            next_position[1] = wanted_direction[1];
+            rot_ply = -wanted_direction[0] * 90;
+            rot_ply +=  wanted_direction[1] == -1 ? 180 : 0;
+        }
 
-    if (map_mat[position[0] + wanted_direction[0]][position[1] + wanted_direction[1]] > 0){
-        next_position[0] = wanted_direction[0];
-        next_position[1] = wanted_direction[1];
-        rot_ply = -wanted_direction[0] * 90;
-        rot_ply +=  wanted_direction[1] == -1 ? 180 : 0;
-    }
+        if (game_timer % 2 == 0 && map_mat[position[0] + next_position[0]][position[1] + next_position[1]] > 0){
+            position[0] += next_position[0];
+            position[1] += next_position[1];
+            map_mat[position[0]][position[1]] = 1;
+        }
+        
+        if ( position[1] < 1 ) 
+            position[1] = 65;
+        else if (position[1] > 65)
+            position[1] = 1;
+        
+    
+        
+        if (game_timer > 50 && game_timer % 3 == 0)
+            move_ghost(2);
 
-    if (game_timer % 2 == 0 && map_mat[position[0] + next_position[0]][position[1] + next_position[1]] > 0){
-        position[0] += next_position[0];
-        position[1] += next_position[1];
-        map_mat[position[0]][position[1]] = 1;
+        if (game_timer > 250 && game_timer % 3 == 0)
+            move_ghost(1);
+        
+        if (game_timer > 500 && game_timer % 3 == 0)
+            move_ghost(3);
     }
     
-    if ( position[1] < 1 ) 
-        position[1] = 65;
-    else if (position[1] > 65)
-        position[1] = 1;
-        
-
+    
     draw_map();
     draw_player(rot_ply);
 
+    
+    
     draw_ghost(ghosts_position[0],ghosts_position[1],1);
     draw_ghost(ghosts_position[2],ghosts_position[3],2); 
     draw_ghost(ghosts_position[4],ghosts_position[5],3);
+    
+    int i = 0;
+    
+    for (; i < 3; i++) {
+        if ( sqrt(pow(position[0]-ghosts_position[i*2],2) + pow(position[1]-ghosts_position[i*2+1],2)) < 3){
+            position[0] = ghosts_position[i*2];
+            position[1] = ghosts_position[i*2+1];
+            on_going = 0;
+        }
+        ghosts_look[i] = ghosts_dir[2*i+1] * 90;
+        ghosts_look[i] = ghosts_dir[2*i] == -1 ? 180 : ghosts_look[i];
+    }
     
     glutPostRedisplay();
     glutSwapBuffers();
@@ -337,7 +372,7 @@ void draw_map()
 
 void draw_player(int rot)
 {   
-    int mouth_angle = (game_timer % 20)*2;
+    int mouth_angle = (game_timer % 20)*2 * on_going;
 
     glPushMatrix();
     glTranslatef(position[0],position[1],2);
@@ -463,7 +498,7 @@ void draw_ghost(int x,int y, int c)
     glPushMatrix();
     
     glTranslatef(x,y,2.4);
-        // Up side of head
+        glRotatef(ghosts_look[c-1],0,0,1);
         glPushMatrix();
             GLdouble plane0[] = {0,0,1,0};
             glEnable(GL_CLIP_PLANE0);
@@ -540,59 +575,131 @@ void draw_ghost(int x,int y, int c)
         glPushMatrix();
         glRotatef(22,0,0,1);
         glPushMatrix();
-            glTranslatef(2,-0.2,mouth_height); 
+            glTranslatef(1.8,-0.2,mouth_height); 
             glRotatef(50,1,0,0);
             glColor3f(0.3,0,0.2);
-            glScalef(2,7,1);
+            glScalef(1,7,1);
             glutSolidCube(0.1);
         glPopMatrix();
         
         glPushMatrix();
-            glTranslatef(2,0.2,mouth_height); 
+            glTranslatef(1.8,0.2,mouth_height); 
             glRotatef(-50,1,0,0);
             glColor3f(0.3,0,0.2);
-            glScalef(2,7,1);
+            glScalef(1,7,1);
             glutSolidCube(0.1);
         glPopMatrix();
         glPopMatrix();
         
         glPushMatrix();
-            glTranslatef(2,-0.2,mouth_height); 
+            glTranslatef(1.8,-0.2,mouth_height); 
             glRotatef(50,1,0,0);
             glColor3f(0.3,0,0.2);
-            glScalef(2,7,1);
+            glScalef(1,7,1);
             glutSolidCube(0.1);
         glPopMatrix();
         
         glPushMatrix();
-            glTranslatef(2,0.2,mouth_height); 
+            glTranslatef(1.8,0.2,mouth_height); 
             glRotatef(-50,1,0,0);
             glColor3f(0.3,0,0.2);
-            glScalef(2,7,1);
+            glScalef(1,7,1);
             glutSolidCube(0.1);
         glPopMatrix();
         
         glPushMatrix();
         glRotatef(-22,0,0,1);
         glPushMatrix();
-            glTranslatef(2,-0.2,mouth_height); 
+            glTranslatef(1.8,-0.2,mouth_height); 
             glRotatef(50,1,0,0);
             glColor3f(0.3,0,0.2);
-            glScalef(2,7,1);
+            glScalef(1,7,1);
             glutSolidCube(0.1);
         glPopMatrix();
         
         glPushMatrix();
-            glTranslatef(2,0.2,mouth_height); 
+            glTranslatef(1.8,0.2,mouth_height); 
             glRotatef(-50,1,0,0);
             glColor3f(0.3,0,0.2);
-            glScalef(3,7,1);
+            glScalef(1,7,1);
             glutSolidCube(0.1);
         glPopMatrix();
         glPopMatrix();
         
     glPopMatrix();
     
+}
+
+void move_ghost(int ghost)
+{
+    int x = ghosts_position[ghost*2-2];
+    int y = ghosts_position[ghost*2-1];
+   
+    int count = 0;
+    
+    int new_x[4] = {0,0,0,0};
+    int new_y[4] = {0,0,0,0};
+    int new_pos_x, new_pos_y;
+    
+    if (map_mat[x + 1][y] > 0 && min_distance_to_another(ghost, 1, 0) > 3){
+        new_x[count]++;
+        count++;
+    } 
+        
+    if (map_mat[x - 1][y] > 0 && min_distance_to_another(ghost, -1, 0) > 3){
+        new_x[count]--;
+        count++;
+    }
+    
+    if (map_mat[x][y + 1] > 0 && min_distance_to_another(ghost, 0, 1) > 3){
+        new_y[count]++;
+        count++;
+    }
+    
+    if (map_mat[x][y - 1] > 0 && min_distance_to_another(ghost, 0, -1) > 3 ){
+        new_y[count]--;
+        count++;
+    }
+        
+    if (count == 0) {
+        new_pos_x = x;
+        new_pos_y = y;
+    }
+    else {
+        clock_t cl = clock();
+        double r = cl;
+        srand( cl );
+    
+        int rand_coef = rand() % count;
+        new_pos_x = x + new_x[rand_coef];
+        new_pos_y = y + new_y[rand_coef];
+    }
+    
+    if (count < 3 && map_mat[x + ghosts_dir[ghost*2-2]][y + ghosts_dir[ghost*2-1]] > 0 
+        && min_distance_to_another(ghost, ghosts_dir[ghost*2-2], ghosts_dir[ghost*2-1]) > 3 ){
+        new_pos_x = x + ghosts_dir[ghost*2-2];
+        new_pos_y = y + ghosts_dir[ghost*2-1];
+        
+    }
+    else {
+        ghosts_dir[ghost*2-2] = new_pos_x - x;
+        ghosts_dir[ghost*2-1] = new_pos_y - y;
+    }
+    
+    ghosts_position[ghost*2-2] = new_pos_x;
+    ghosts_position[ghost*2-1] = new_pos_y;
+}
+
+float min_distance_to_another(int ghost, int x, int y)
+{
+    int g_x = ghost - 1;
+    int g1_x = (g_x + 1) % 3;
+    int g2_x = (g_x + 2) % 3;
+    
+    float dist1 = abs(ghosts_position[g_x*2]-ghosts_position[g1_x*2]+x) + abs(ghosts_position[g_x*2+1]-ghosts_position[g1_x*2+1]+y);
+    float dist2 = abs(ghosts_position[g_x*2]-ghosts_position[g2_x*2]+x) + abs(ghosts_position[g_x*2+1]-ghosts_position[g2_x*2+1]+y);
+    
+    return dist1 < dist2 ? dist1 : dist2;
 }
 
 void light_and_material(void)
