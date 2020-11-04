@@ -10,6 +10,7 @@ ___
 <kbd>D/d</kbd> Idi desno <br>
 <kbd>W/w</kbd> Idi gore <br>
 <kbd>S/s</kbd> Idi dole <br>
+<kbd>q/e</kbd> Promene ugla gleadanja <br>
 <kbd>Enter</kbd> Pocetak igre <br>
 ___
 
