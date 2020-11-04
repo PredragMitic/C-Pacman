@@ -1,5 +1,5 @@
 /////////////////////////////////////////////
-/// Preuzeto sa 7.casa vezbi 
+/// Code from Computer Graphics classes
 ////////////////////////////////////////////
 /*
  * Dve strukture koje opisuju strukturu dva zaglavlja

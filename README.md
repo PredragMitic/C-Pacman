@@ -1,28 +1,31 @@
 #  _Pacman_
 ___
 
-### Opis:
-Igrica je radjena prema staroj igrici 'Pacman' u 3d prostoru i sa nekim izmenama
+### Description:
+Pacman is one of most popular classic game from '80s. 
+This one is made for course 
+Computer Graphics on Faculty of Mathematics in Belgrade.
 ___
 
-### Komande:
-<kbd>A/a</kbd> Idi levo <br>
-<kbd>D/d</kbd> Idi desno <br>
-<kbd>W/w</kbd> Idi gore <br>
-<kbd>S/s</kbd> Idi dole <br>
-<kbd>q/e</kbd> Promene ugla gleadanja <br>
-<kbd>Enter</kbd> Pocetak igre <br>
+### Comands:
+<kbd>A/a</kbd> Go left <br>
+<kbd>D/d</kbd> Go right <br>
+<kbd>W/w</kbd> Go up <br>
+<kbd>S/s</kbd> Go down <br>
+<kbd>q/e</kbd> Change camera view angle <br>
+<kbd>Enter</kbd> Start game <br>
 ___
 
-### Pokretanje igrice:
+### Running game (On GNU/Linux):
 You need to install OpenGL\GLUT on your computer,
 next command can do that
 ```shell
 sudo apt-get install freeglut3-dev
 ```
-Now you can ran game with next commands:
+Now you can run game with next commands:
 ```shell
 git clone https://github.com/PredragMitic/C-Pacman/
+cd C-Pacman
 make
 ./pacman 
 

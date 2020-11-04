@@ -1,3 +1,7 @@
+// Author: Predrag Mitic
+// E-mail: predrag98mitic@gmail.com
+// Version: v0.1.1.0
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/glut.h>
