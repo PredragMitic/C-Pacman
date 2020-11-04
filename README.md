@@ -7,7 +7,7 @@ This one is made for course
 Computer Graphics on Faculty of Mathematics in Belgrade.
 ___
 
-### Comands:
+### Commands:
 <kbd>A/a</kbd> Go left <br>
 <kbd>D/d</kbd> Go right <br>
 <kbd>W/w</kbd> Go up <br>
