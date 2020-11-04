@@ -15,14 +15,14 @@ ___
 ___
 
 ### Pokretanje igrice:
-Neophodno je da imate instaliran OpenGL\GLUT na vasem racunaru
-sto mozete uraditi na sledeci nacin:
+You need to install OpenGL\GLUT on your computer,
+next command can do that
 ```shell
 sudo apt-get install freeglut3-dev
 ```
-Zatim mozete pokrenuti igricu sledecim komandama:
+Now you can ran game with next commands:
 ```shell
-git clone https://github.com/MATF-RG19/RG119-pacman
+git clone https://github.com/PredragMitic/C-Pacman/
 make
 ./pacman 
 
