@@ -8,7 +8,7 @@
 
 #define PI 3.14
 #define EPS 0.3
-#define TIMER_INTERVAL 40
+#define TIMER_INTERVAL 30
 #define TIMER_ID 0
 
 static char* FILENAME1 = "pacman.bmp"; 
@@ -21,8 +21,8 @@ static int map_mat[67][67];
 static int width, height;
 static int score;
 static int on_going;
-static int position[2];
 static int ready = 1;
+static int position[2];
 static int next_position[2];
 static int wanted_direction[2];
 static int ghosts_color[3] = {1,2,3};
@@ -60,11 +60,12 @@ int main(int argc, char **argv)
     glutInitWindowPosition(30, 15);
     glutCreateWindow(argv[0]);
     glutTimerFunc(TIMER_INTERVAL, on_timer, TIMER_ID);
-    
+
     glutReshapeFunc(on_reshape);
     glutKeyboardFunc(on_keyboard);
     glutDisplayFunc(on_display);
     
+
     glClearColor(0.1, 0.1, 0.1, 0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
@@ -216,12 +217,11 @@ static void on_keyboard(unsigned char key, int x, int y)
 
 static void on_display(void)
 {
-    game_timer++;
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    
+   
+
     if (on_going == 1 && game_timer < 80)
         anim_param = game_timer;
     
@@ -268,7 +268,7 @@ static void on_display(void)
     glBindTexture(GL_TEXTURE_2D, 0);
     
 
-   
+  
     if (on_going == 1){
         // Moving player 
         if (map_mat[position[0] + wanted_direction[0]][position[1] + wanted_direction[1]] > 0){
@@ -300,7 +300,7 @@ static void on_display(void)
         if (game_timer > 350 && ready == 0)
             move_ghost(1);
         
-        if (game_timer > 500 && ready == 0)
+        if (game_timer > 500 && ready  == 0)
             move_ghost(3);
     }
     
@@ -308,8 +308,6 @@ static void on_display(void)
     draw_map();
     draw_player(rot_ply);
 
-    
-    
     draw_ghost(ghosts_position[0],ghosts_position[1],1);
     draw_ghost(ghosts_position[2],ghosts_position[3],2); 
     draw_ghost(ghosts_position[4],ghosts_position[5],3);
@@ -344,7 +342,7 @@ static void on_display(void)
     // If player has score 3870, game is done
     if (score == 3870)
         on_going = 2;
-    
+
     ready = 1;
     
     glutPostRedisplay();
@@ -368,7 +366,7 @@ void draw_map()
     for (i = 0; i < 67; i++){
         for (j = 0; j < 67; j++){
             
-            float wave = sin(game_timer/5 + i + j)/5+1;
+            float wave = sin(game_timer/4 + i + j)/5+1;
             
             switch (map_mat[i][j]){
             case 2 : // small ball
@@ -449,7 +447,7 @@ void draw_player(int rot)
             glEnable(GL_CLIP_PLANE0);
             glClipPlane(GL_CLIP_PLANE0, plane0);
                 glColor3f(0.8, 0.9, 0);
-                glutSolidSphere(1.5,20,20); 
+                glutSolidSphere(1.5,30,30); 
             glDisable(GL_CLIP_PLANE0);
         glPopMatrix();
         
@@ -462,7 +460,7 @@ void draw_player(int rot)
             glEnable(GL_CLIP_PLANE0);
             glClipPlane(GL_CLIP_PLANE0, plane1);
                 glColor3f(0.8, 0.9, 0);
-                glutSolidSphere(1.5,20,20); 
+                glutSolidSphere(1.5,30,30); 
             glDisable(GL_CLIP_PLANE0);
         glPopMatrix();
         
@@ -489,14 +487,12 @@ void draw_player(int rot)
 void draw_wall_y()
 {
     int wall_high = 2.2;
-    // Wall plane
-    glBegin(GL_POLYGON);
-        glNormal3f(1,0,0);
-        glVertex3f(0,0,0);
-        glVertex3f(0,0,wall_high);
-        glVertex3f(0,1,wall_high);
-        glVertex3f(0,1,0);
-    glEnd();
+    
+    glPushMatrix();
+        glTranslatef(0,0.5,1.1);
+        glScalef(0.4,1,2.2);
+        glutSolidCube(1);
+    glPopMatrix();
                   
     
 }
@@ -504,20 +500,18 @@ void draw_wall_x()
 {
     int wall_high = 2.2;
     // Wall plane
-    glBegin(GL_POLYGON);
-        glNormal3f(0,1,0);
-        glVertex3f(0,0,0);
-        glVertex3f(0,0,wall_high);
-        glVertex3f(1,0,wall_high);
-        glVertex3f(1,0,0);
-    glEnd();
+     glPushMatrix();
+        glTranslatef(0.5,0,1.1);
+        glScalef(1,.4,2.2);
+        glutSolidCube(1);
+    glPopMatrix();
     
 }
 
 void draw_pillar( int k)
 {
     // Draw 1/4 cylinder on the end of wall
-    float l = 2;
+    float l = 2.2;
     float r = 1;
     float u, v;
     glPushMatrix();
@@ -529,10 +523,22 @@ void draw_pillar( int k)
         glClipPlane(GL_CLIP_PLANE0, plane0);
         glEnable(GL_CLIP_PLANE0+1);
         glClipPlane(GL_CLIP_PLANE0+1, plane1);
-        gluCylinder(quad, r,  r,  l,  12,  1);
+        gluCylinder(quad, r+.2,  r+.2,  l,  12,  1);
+        gluQuadricOrientation(quad,GLU_INSIDE);
+        gluCylinder(quad, r-.2,  r-.2,  l,  12,  1);
+        gluQuadricOrientation(quad,GLU_OUTSIDE);
+        glPushMatrix();
+            glTranslatef(0,0,l);
+            gluDisk(quad, r-.2, r+.2, 12,1);
+        glPopMatrix();
         glDisable(GL_CLIP_PLANE0+1);
         glDisable(GL_CLIP_PLANE0);
     glPopMatrix();
+    
+    
+    
+    
+    
 }
 
 void draw_ghost(int x,int y, int c)
@@ -771,7 +777,7 @@ float min_distance_to_another(int ghost, int x, int y)
 void light_and_material(void)
 {
     // Set brightnes 
-    GLfloat light_position[] = {330, 40, 100, 0 };
+    GLfloat light_position[] = {60, 80, 20, 0 };
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     
     GLfloat ambient[] = { 0.2, 0.2, 0.2, 1 };
@@ -853,11 +859,11 @@ void init_map() {
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,4,9,9,9,9,0,6,0,2,0,7,0,6,0,2,0,7,9,9,9,9,0,5,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,8,0,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,0,8,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,8,0,2,0,4,9,9,9,0,5,0,1,0,4,9,9,9,0,5,0,2,0,8,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,8,0,0,0,0,0,0,1,0,0,0,0,0,0,8,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                {9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,6,0,0,2,0,7,0,6,0,2,0,8,0,1,0,0,0,0,1,0,0,0,0,1,0,8,0,2,0,7,0,6,0,2,0,7,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9},
-                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,8,0,1,0,0,0,0,1,0,0,0,0,1,0,8,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,1,0,8,0,8,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,8,0,8,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,2,0,8,0,8,0,2,0,4,9,9,9,9,9,9,9,9,9,9,9,9,0,5,0,2,0,8,0,8,0,2,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                {9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,6,0,0,2,0,7,0,6,0,2,0,8,0,1,0,0,0,0,0,0,0,0,0,1,0,8,0,2,0,7,0,6,0,2,0,7,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9},
+                {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,8,0,1,0,0,0,0,0,0,0,0,0,1,0,8,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,0,8,0,1,1,1,1,1,1,1,1,1,1,1,0,8,0,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1},
                 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,8,0,1,0,0,0,0,1,0,0,0,0,1,0,8,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
                 {9,9,9,9,9,9,9,9,9,9,9,9,9,9,0,5,0,0,2,0,4,0,5,0,2,0,8,0,1,0,0,0,0,1,0,0,0,0,1,0,8,0,2,0,4,0,5,0,2,0,4,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9},
